@@ -1,0 +1,28 @@
+{
+  "name": "sherbrooke-explorer",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Explore a 3D open-world reconstruction of Sherbrooke, Québec",
+  "main": "electron/main.js",
+  "scripts": {
+    "dev": "vite",
+    "preview": "vite preview",
+    "data": "node scripts/build-world.mjs",
+    "build:web": "vite build",
+    "dev:electron": "concurrently -k \"vite --port 5173 --strictPort\" \"wait-on http://localhost:5173 && electron .\"",
+    "build:mac": "vite build && electron-builder --mac --config electron-builder.yml --publish never"
+  },
+  "dependencies": {
+    "cannon-es": "^0.20.0",
+    "earcut": "^2.2.4",
+    "three": "^0.170.0"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "electron": "^33.2.1",
+    "electron-builder": "^25.1.8",
+    "pngjs": "^7.0.0",
+    "vite": "^6.0.6",
+    "wait-on": "^8.0.1"
+  }
+}
