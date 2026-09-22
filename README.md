@@ -34,7 +34,28 @@ You start on downtown Rue King, near the Monument aux Braves. Press M to jump to
 
 ## Native macOS app
 
-Packaging steps are added in Phase 6. Until then, use the local dev server above.
+The app is unsigned. macOS Gatekeeper will refuse a normal double-click the first time.
+
+1. Open `release/` and drag **Sherbrooke Explorer** to Applications, or open the `.dmg` and drag it across.
+2. Control-click (or right-click) the app and choose **Open**.
+3. Confirm **Open** in the dialog. macOS remembers that choice afterwards.
+
+Build it from a clean checkout:
+
+```bash
+npm install
+npm run build:mac
+```
+
+That writes a `.dmg` and a `.zip` for both Apple silicon and Intel into `release/`. Those archives are build output and are not stored in git.
+
+To run the shell with hot reload instead of a packaged app:
+
+```bash
+npm run dev:electron
+```
+
+F11 toggles fullscreen. There is no browser menu bar.
 
 Map data © OpenStreetMap contributors, available under the Open Database License.
 

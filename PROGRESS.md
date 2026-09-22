@@ -99,14 +99,23 @@ Floor heights default to 2–8 when OSM has no `building:levels` or `height`. Do
 
 ## Phase 6 — Native macOS packaging
 
-- [ ] electron, electron-builder, concurrently, wait-on
-- [ ] `electron/main.js` and `electron/preload.js` per spec
-- [ ] npm scripts `dev:electron`, `build:web`, `build:mac`
-- [ ] 1024 icon, `.icns`
-- [ ] `electron-builder.yml` per spec, unsigned, no notarization
-- [ ] Gatekeeper workaround in the README
-- [ ] Verify packaged `.app` and list `.dmg` / `.zip` sizes
-- [ ] Commit and push source only (no `release/` or `dist/`)
+- [x] electron, electron-builder, concurrently, wait-on — devDependencies, game code untouched by the shell
+- [x] `electron/main.js` and `electron/preload.js` per spec — 1440×900, min 1024×640, black background, no menu bar, F11 fullscreen, contextIsolation on, nodeIntegration off
+- [x] npm scripts `dev:electron`, `build:web`, `build:mac`
+- [x] 1024 icon, `.icns` — stylized skyline, hill, and the two rivers meeting. `iconutil` produced `build/icon.icns`. The packaged app's `CFBundleIconFile` is `icon.icns`.
+- [x] `electron-builder.yml` per spec — appId `com.jacobhm.sherbrookeexplorer`, hardenedRuntime true, gatekeeperAssess false, identity null so it stays unsigned. No notarization.
+- [x] Gatekeeper workaround in the README — control-click and choose Open
+- [x] Verify packaged `.app` and list `.dmg` / `.zip` sizes — the arm64 app launched from `file://` inside the asar, the HUD came up, and an uncapped loop of the real frame function ran at about 1700 fps (about 0.6 ms a frame) with the downtown view on screen. Display refresh will hold it at 60. GPU switches `ignore-gpu-blocklist` and `enable-gpu-rasterization` are on.
+- [x] Commit and push source only (no `release/` or `dist/`)
+
+Release artifacts (not in git):
+
+| File | Size |
+| --- | --- |
+| Sherbrooke Explorer-1.0.0-arm64.dmg | 105.9 MB |
+| Sherbrooke Explorer-1.0.0-arm64-mac.zip | 100.7 MB |
+| Sherbrooke Explorer-1.0.0.dmg (Intel) | 110.4 MB |
+| Sherbrooke Explorer-1.0.0-mac.zip (Intel) | 105.4 MB |
 
 ## Phase 7 — Public browser deployment
 
