@@ -41,13 +41,37 @@ Floor heights default to 2–8 when OSM has no `building:levels` or `height`. Do
 
 ## Phase 2 — Terrain and world
 
-- [ ] Heightmap terrain (river valleys, downtown hill, rising outskirts)
-- [ ] Extruded building footprints, tinted by type
-- [ ] Roads with sidewalks, lane markings, streetlights
-- [ ] Both rivers, animated water, confluence
-- [ ] Day-night sky with Quebec haze
-- [ ] Instanced vegetation in parks, King's Hill, campuses
-- [ ] Commit and push
+- [x] Heightmap terrain (river valleys, downtown hill, rising outskirts) — terrarium DEM plus a small simplex detail; rivers are carved into the mesh
+- [x] Extruded building footprints, tinted by type — near chunks use the real footprint; farther chunks use a box of the same footprint bounds
+- [x] Roads with sidewalks, lane markings, streetlights — widths follow the highway class; bridges get a flat deck so they stay above the rivers
+- [x] Both rivers, animated water, confluence — Magog, Saint-François, and Massawippi, plus the confluence landmark
+- [x] Day-night sky with Quebec haze — slow cycle, fog tied to the horizon color
+- [x] Instanced vegetation in parks, King's Hill, campus greens, and other mapped green space
+- [x] Commit and push
+
+## Phase 3 — Player, vehicles, controls
+
+- [x] Third-person over-the-shoulder camera, first-person toggle (V)
+- [x] Capsule-style collider and cannon-es physics — cylinder body, static building boxes from the same footprints
+- [x] On foot: WASD, Shift sprint, Space jump, C crouch, mouse orbit. Movement is read from the camera direction.
+- [x] Four drivable cars (downtown, Université de Sherbrooke, Bishop's, Rock Forest), arcade handling, F to enter or exit
+- [x] Minimap and compass — north is up on the map
+- [x] M landmark quick-menu for every Phase 1 POI, including the confluence
+- [x] Commit and push — headless control self-test passed for W A S D and the arrow keys (movement, facing, and the nose marker all agreed). A two-second throttle test moved the downtown car 32.4 m.
+
+## Phase 4 — Performance and streaming
+
+- [x] Chunked tiles of 250 m, radius rendering, frustum culling, LOD past about 500 m — full extrusions inside 500 m, instanced boxes from 500 m to 1 km, terrain and main roads farther out
+- [x] 60 fps target, F3 overlay (fps, draw calls) — a downtown view draws about 176 calls and 30k triangles. On this Mac the headless frame loop was far above 60 fps. The visible set is small because chunks outside the camera are culled.
+- [x] Instanced meshes for trees, lamp posts, and distant buildings
+- [x] Commit and push
+
+## Phase 5 — Polish
+
+- [x] Ambient city audio referenced by filename — `public/audio/city-ambient.wav` and `public/audio/rain.wav`. These are synthesized loops (brown noise and a low hum, and filtered noise for rain), not field recordings. The car engine is a live oscillator.
+- [x] Landmark discovery layer and on-screen counter — walk within 22 m of a named place. Progress is kept in localStorage.
+- [x] Weather toggle: clear / light rain (R) — particles plus wetter roads
+- [x] Commit and push
 
 ## Phase 3 — Player, vehicles, controls
 

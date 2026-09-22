@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sherbrooke Explorer</title>
+  </head>
+  <body>
+    <div id="load">
+      <div class="brand">Sherbrooke Explorer</div>
+      <p>Québec — walk or drive the city</p>
+      <div class="bar"><div id="load-fill"></div></div>
+      <div id="load-msg">Loading the map…</div>
+    </div>
+    <div id="hud" hidden>
+      <div id="top">
+        <div id="clock">Morning</div>
+        <canvas id="compass" width="420" height="46"></canvas>
+        <div id="landmarks">Landmarks 0/0</div>
+      </div>
+      <div id="crosshair" hidden></div>
+      <div id="prompt"></div>
+      <div id="speed" hidden>0 km/h</div>
+      <div id="map-wrap">
+        <canvas id="map" width="210" height="210"></canvas>
+        <div class="map-label">N</div>
+      </div>
+      <div id="hint">WASD move · Shift sprint · Space jump · C crouch · F car · V camera · M map · R weather · click to look</div>
+      <div id="debug" hidden></div>
+      <div id="attr">© OpenStreetMap contributors</div>
+    </div>
+    <div id="menu" hidden>
+      <div class="panel">
+        <h2>Landmarks</h2>
+        <p>Teleport anywhere in Sherbrooke.</p>
+        <div id="menu-list"></div>
+        <button id="menu-close" type="button">Close</button>
+      </div>
+    </div>
+    <pre id="selftest" hidden></pre>
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>

@@ -17,6 +17,8 @@ npm run dev
 
 Then open the URL Vite prints (http://localhost:5173). Click the view to capture the mouse.
 
+You start on downtown Rue King, near the Monument aux Braves. Press M to jump to the cathedral, the Granada, the market, both universities, the Jacques-Cartier bridge, Lennoxville, Rock Forest, or the river confluence. Walk up to a landmark to mark it found. A red car is parked beside the spawn point; press F to drive. Three more cars wait at the campuses and in Rock Forest.
+
 | Key | Action |
 | --- | --- |
 | W A S D | Walk, or steer / throttle in a car |
