@@ -1,0 +1,15 @@
+node_modules/
+dist/
+release/
+.DS_Store
+*.log
+
+# Intermediate Overpass / DEM downloads. The parsed city is data/sherbrooke.geojson.
+data/raw/
+data/cache/
+*.osm.pbf
+
+# OS / editor
+.idea/
+.vscode/
+*.swp

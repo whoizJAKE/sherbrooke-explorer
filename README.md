@@ -1,0 +1,41 @@
+# Sherbrooke Explorer
+
+A 3D explorable reconstruction of Sherbrooke, Québec you can walk or drive around. The city is built from OpenStreetMap footprints and roads at roughly 1:1 scale, covering downtown, Lennoxville, the Université de Sherbrooke and Bishop's University campuses, and Rock Forest, with both the Magog and Saint-François rivers and their confluence.
+
+This repository is the full source. A browser build is deployed with GitHub Pages, and the same project packages as a native macOS app.
+
+## Play in your browser
+
+Public link (filled in once GitHub Pages is live): _coming in Phase 8_
+
+## Play it locally
+
+```bash
+npm install
+npm run dev
+```
+
+Then open the URL Vite prints (http://localhost:5173). Click the view to capture the mouse.
+
+| Key | Action |
+| --- | --- |
+| W A S D | Walk, or steer / throttle in a car |
+| Shift | Sprint |
+| Space | Jump, or handbrake in a car |
+| C | Crouch |
+| F | Enter or exit a car when you are next to one |
+| V | Toggle third person / first person |
+| M | Landmark quick-menu |
+| R | Toggle clear weather / light rain |
+| F3 | Debug overlay (fps, draw calls) |
+| Esc | Release the mouse |
+
+## Native macOS app
+
+Packaging steps are added in Phase 6. Until then, use the local dev server above.
+
+Map data © OpenStreetMap contributors, available under the Open Database License.
+
+## License
+
+Source code in this repository is released under the MIT License. OpenStreetMap data remains under the ODbL and is not relicensed.
