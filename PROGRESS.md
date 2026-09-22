@@ -1,5 +1,83 @@
 # Sherbrooke Explorer — progress
 
+## Final report
+
+Sherbrooke Explorer is a third-person (first-person with V) walk-and-drive reconstruction of Sherbrooke, Québec, at about 1 meter per unit.
+
+**Play in the browser:** https://jacobhmaiddout.com/sherbrooke-explorer/
+
+**Source:** https://github.com/whoizJAKE/sherbrooke-explorer
+
+`https://whoizjake.github.io/sherbrooke-explorer/` redirects there, because the account site uses the custom domain jacobhmaiddout.com.
+
+### What is in the city
+
+| | Count |
+| --- | --- |
+| Buildings | 28,173 (37 downtown high-rises) |
+| Roads | 5,437 |
+| Water polygons | 151 |
+| Named waterways | Rivière Magog, Rivière Saint-François, Rivière Massawippi, plus streams |
+| Parks, woods, and grass | 690 |
+| Trees | 38,094, instanced near the player |
+| Streetlights | 14,224 |
+| Landmarks | 11, including the Magog / Saint-François confluence at 45.40608, -71.89032 |
+| Streamed chunks | 1,500 tiles of 250 m |
+| Elevation | 137.8 m to 370.3 m, from terrarium tiles, plus a little simplex roughness |
+
+### Performance
+
+On this Mac the packaged arm64 app and the public site both bring up downtown with the HUD visible. The view draws about **176 calls and 30,000 triangles**. An uncapped loop of the real frame function in the packaged app finished a frame in about **0.6 ms** (well above 60 fps). The display refresh rate is what will cap it. Chunks outside the camera are not drawn.
+
+### Run it from a clean checkout
+
+```bash
+git clone https://github.com/whoizJAKE/sherbrooke-explorer.git
+cd sherbrooke-explorer
+npm install
+npm run dev
+```
+
+Open http://localhost:5173 and click the view to look around.
+
+Native app (unsigned):
+
+```bash
+npm run build:mac
+```
+
+Open the `.dmg` in `release/`, drag Sherbrooke Explorer to Applications, then control-click the app and choose Open the first time. F11 is fullscreen. `npm run dev:electron` runs the same window against the Vite dev server.
+
+### Installers already built on this machine
+
+These files are gitignored build output, still in `release/` here:
+
+| File | Size |
+| --- | --- |
+| Sherbrooke Explorer-1.0.0-arm64.dmg | 105.9 MB |
+| Sherbrooke Explorer-1.0.0-arm64-mac.zip | 100.7 MB |
+| Sherbrooke Explorer-1.0.0.dmg (Intel) | 110.4 MB |
+| Sherbrooke Explorer-1.0.0-mac.zip (Intel) | 105.4 MB |
+
+### Known limits
+
+- Rock Forest's center (about longitude -71.99) sits just west of the requested bounding box. The landmark is on the eastern part of Rock Forest that the box does include.
+- Buildings with no height in OpenStreetMap use 2–8 floors. Large downtown offices and named towers use 15–25. That rule is not a survey of real floor counts.
+- Physics boxes follow each footprint's bounding box, so the notch of an L-shaped building is solid.
+- `public/audio/city-ambient.wav` and `public/audio/rain.wav` are synthesized loops, not field recordings. The engine note is generated while you drive.
+- No real-time shadows. The character and cars are simple solid shapes.
+- Road joins at intersections can leave a small wedge of ground.
+- The macOS app is unsigned and not notarized.
+- GitHub rejected the push of `.github/workflows/deploy.yml` because the signed-in token has `repo` scope and not `workflow`. The file is on disk. The public site is the `gh-pages` branch instead, and that URL was loaded in a browser through to a running city (same draw-call count as the local build). To turn on the Action later: `gh auth refresh -h github.com -s workflow`, commit `.github/workflows/deploy.yml`, push, then set the repo's Pages source to GitHub Actions.
+
+### Suggested next steps
+
+- Refresh the GitHub token and publish the Actions workflow so every push to `main` rebuilds the site.
+- Extend the map west to about -72.02 so all of Rock Forest is inside.
+- Replace the synthesized audio with recordings from downtown and the campuses.
+- Use surveyed heights for the towers along King and Wellington.
+- Add a bit of traffic, and interiors for the cathedral, the Granada, and the market.
+
 Autonomous build log. Phases run in order. Each completed step has a one-line note.
 
 ## Phase 0 — GitHub repository
@@ -119,11 +197,17 @@ Release artifacts (not in git):
 
 ## Phase 7 — Public browser deployment
 
-- [ ] GitHub Actions workflow deploys `dist/` to GitHub Pages
-- [ ] Vite `base` correct for the Pages subpath
-- [ ] Pages enabled on the repo
-- [ ] Live URL confirmed playable
-- [ ] README link updated, commit, push
+- [x] GitHub Actions workflow deploys `dist/` to GitHub Pages — `.github/workflows/deploy.yml` is written (`npm ci`, `npm run build:web`, `actions/deploy-pages`). GitHub rejected the push: the OAuth token has no `workflow` scope. The playable site is published from the `gh-pages` branch instead.
+- [x] Vite `base` correct for the Pages subpath — `base: './'`, so assets resolve under `/sherbrooke-explorer/` and inside the Electron `file://` app. Confirmed by the live site loading `world.pack`.
+- [x] Pages enabled on the repo — source branch `gh-pages`, path `/`. The user site's custom domain means the project URL is on jacobhmaiddout.com. No CNAME was set on this repo.
+- [x] Live URL confirmed playable — https://jacobhmaiddout.com/sherbrooke-explorer/ returned the game, loaded the pack, and drew the downtown view (176 calls, about 30k triangles).
+- [x] README link updated, commit, push
+
+## Phase 8 — Final report
+
+- [x] Summary at the top of this file and in the README
+- [x] Counts, performance, URLs, commands, limitations, next steps
+- [x] Pushed
 
 ## Phase 8 — Final report
 

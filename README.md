@@ -6,7 +6,9 @@ This repository is the full source. A browser build is deployed with GitHub Page
 
 ## Play in your browser
 
-Public link (filled in once GitHub Pages is live): _coming in Phase 8_
+https://jacobhmaiddout.com/sherbrooke-explorer/
+
+The same address is where https://whoizjake.github.io/sherbrooke-explorer/ sends you. Map data is loaded from that site, so you can walk and drive without installing anything.
 
 ## Play it locally
 
@@ -56,6 +58,8 @@ npm run dev:electron
 ```
 
 F11 toggles fullscreen. There is no browser menu bar.
+
+The public site is the `gh-pages` branch. `npm run build:web` writes a new `dist/`. An Actions workflow that would publish `dist/` on every push to `main` is saved at `.github/workflows/deploy.yml`. Publishing that file needs a GitHub token with the `workflow` scope (`gh auth refresh -h github.com -s workflow`). Until then, update the site by replacing the files on `gh-pages`.
 
 Map data © OpenStreetMap contributors, available under the Open Database License.
 
