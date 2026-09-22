@@ -1,0 +1,177 @@
+{
+  "origin": {
+    "lat": 45.4,
+    "lon": -71.88499999999999
+  },
+  "metersPerDegLat": 111320,
+  "metersPerDegLon": 78163.67785942148,
+  "chunkSize": 250,
+  "bounds": {
+    "minX": -5749.696694236008,
+    "minZ": -5348.491852000059,
+    "maxX": 5755.324479041007,
+    "maxZ": 5771.596908000114
+  },
+  "dem": {
+    "source": "terrarium",
+    "minH": 137.828125,
+    "maxH": 370.30078125,
+    "width": 387,
+    "height": 351
+  },
+  "counts": {
+    "buildings": 28173,
+    "highrises": 37,
+    "roads": 5437,
+    "waterPolygons": 151,
+    "waterways": 184,
+    "parks": 690,
+    "trees": 38094,
+    "lights": 14224,
+    "pois": 11,
+    "chunks": 1500
+  },
+  "spawn": {
+    "x": -494.91377057678454,
+    "z": -86.18319114321343
+  },
+  "carSpawns": [
+    {
+      "id": "downtown",
+      "x": -491.91377057678454,
+      "z": -92.18319114321343,
+      "yaw": 0.4
+    },
+    {
+      "id": "udes",
+      "x": -4302.419130002552,
+      "z": 2591.5962439994487,
+      "yaw": 1.2
+    },
+    {
+      "id": "bishops",
+      "x": 3424.992554474528,
+      "z": 4307.6426279995885,
+      "yaw": 0.2
+    },
+    {
+      "id": "rockforest",
+      "x": -5030.928837193612,
+      "z": 2788.257767999792,
+      "yaw": -0.6
+    }
+  ],
+  "pois": [
+    {
+      "id": "kings-hill",
+      "name": "King's Hill / Cenotaph",
+      "blurb": "Monument aux Braves on the rise of King Street.",
+      "lat": 45.400775,
+      "lon": -71.8913854,
+      "x": -499.10634860459885,
+      "z": -86.27300000049104,
+      "source": "fallback"
+    },
+    {
+      "id": "granada",
+      "name": "Théâtre Granada",
+      "blurb": "The Granada theatre on Wellington North.",
+      "lat": 45.4022896,
+      "lon": -71.8910735,
+      "x": -474.72709748026017,
+      "z": -254.87827200050702,
+      "source": "fallback"
+    },
+    {
+      "id": "marche",
+      "name": "Marché de la Gare",
+      "blurb": "Public market by the old station.",
+      "lat": 45.39745,
+      "lon": -71.89588,
+      "x": -850.4208151116339,
+      "z": 283.86599999993166,
+      "source": "fallback"
+    },
+    {
+      "id": "cathedral",
+      "name": "Cathédrale Saint-Michel",
+      "blurb": "Basilique-cathédrale Saint-Michel.",
+      "lat": 45.4027169,
+      "lon": -71.8925789,
+      "x": -592.3946981297718,
+      "z": -302.4453080003238,
+      "source": "fallback"
+    },
+    {
+      "id": "udes",
+      "name": "Université de Sherbrooke",
+      "blurb": "Main campus below Mont Bellevue.",
+      "lat": 45.3767733,
+      "lon": -71.940274,
+      "x": -4320.419130002552,
+      "z": 2585.5962439994487,
+      "source": "fallback"
+    },
+    {
+      "id": "bishops",
+      "name": "Bishop's University",
+      "blurb": "Bishop's campus in Lennoxville.",
+      "lat": 45.3612321,
+      "lon": -71.8413609,
+      "x": 3410.992554474528,
+      "z": 4315.6426279995885,
+      "source": "fallback"
+    },
+    {
+      "id": "jacques",
+      "name": "Jacques-Cartier Bridge",
+      "blurb": "Pont Jacques-Cartier over the Magog.",
+      "lat": 45.3918809,
+      "lon": -71.9185429,
+      "x": -2621.8364300719377,
+      "z": 903.8182120002028,
+      "source": "fallback"
+    },
+    {
+      "id": "king",
+      "name": "Downtown King Street",
+      "blurb": "Rue King through the downtown core.",
+      "lat": 45.400810125684,
+      "lon": -71.89142131721947,
+      "x": -501.91377057678454,
+      "z": -90.18319114321343,
+      "source": "rue King nearest the cenotaph"
+    },
+    {
+      "id": "lennoxville",
+      "name": "Lennoxville",
+      "blurb": "Lennoxville village core.",
+      "lat": 45.3661982,
+      "lon": -71.8564428,
+      "x": 2232.135781366642,
+      "z": 3762.8163759999,
+      "source": "fallback"
+    },
+    {
+      "id": "rockforest",
+      "name": "Rock Forest",
+      "blurb": "Eastern Rock Forest, inside the mapped area.",
+      "lat": 45.3750426,
+      "lon": -71.9492105,
+      "x": -5018.928837193612,
+      "z": 2778.257767999792,
+      "source": "western mapped roads in Rock Forest"
+    },
+    {
+      "id": "confluence",
+      "name": "River Confluence",
+      "blurb": "Where the Magog meets the Saint-François.",
+      "lat": 45.406078,
+      "lon": -71.89032225,
+      "x": -416.00663448833654,
+      "z": -676.6029600002503,
+      "source": "centerlines within 80m"
+    }
+  ],
+  "attribution": "© OpenStreetMap contributors"
+}
