@@ -33,7 +33,7 @@ export class VehicleManager {
       z = road.z + road.dirX * 1.7;
       yaw = Math.atan2(-road.dirX, -road.dirZ);
     }
-    const y = this.world.surfaceAt(x, z) + 0.72;
+    const y = this.world.surfaceAt(x, z) + 0.02;
     mesh.position.set(x, y, z);
     mesh.rotation.y = yaw;
     const body = new CANNON.Body({
@@ -99,19 +99,20 @@ export class VehicleManager {
       if (car !== this.driven) {
         car.body.position.x = car.mesh.position.x;
         car.body.position.z = car.mesh.position.z;
-        car.body.position.y = this.world.surfaceAt(car.mesh.position.x, car.mesh.position.z) + 0.72;
+        car.body.position.y = this.world.surfaceAt(car.mesh.position.x, car.mesh.position.z) + 0.02;
         car.mesh.position.y = car.body.position.y;
         continue;
       }
       const drive = input.forward;
       const steer = input.strafe;
       const handbrake = input.jumpHeld;
-      if (handbrake) car.speed *= Math.max(0, 1 - dt * 3.2);
-      else if (drive > 0) car.speed += dt * 16;
-      else if (drive < 0) car.speed -= dt * 11;
-      else car.speed *= Math.max(0, 1 - dt * 0.55);
-      car.speed = Math.max(-8, Math.min(32, car.speed));
-      const turnScale = 1.35 * Math.min(1, Math.max(0.2, Math.abs(car.speed) / 7));
+      const abs = Math.abs(car.speed);
+      if (handbrake) car.speed *= Math.max(0, 1 - dt * 4.4);
+      else if (drive > 0) car.speed += dt * (abs < 7 ? 12.5 : 8);
+      else if (drive < 0) car.speed -= dt * 9;
+      else car.speed *= Math.max(0, 1 - dt * 1.15);
+      car.speed = Math.max(-7, Math.min(26, car.speed));
+      const turnScale = 1.2 * (0.38 + 0.62 * (1 - Math.min(1, abs / 24)));
       const reverse = car.speed < -0.2 ? -1 : 1;
       car._steer = steer;
       car.yaw -= steer * dt * turnScale * reverse;
@@ -137,7 +138,7 @@ export class VehicleManager {
     const dem = this.world.dem;
     car.body.position.x = Math.min(dem.maxX - 21, Math.max(dem.minX + 21, x));
     car.body.position.z = Math.min(dem.maxZ - 21, Math.max(dem.minZ + 21, z));
-    const y = this.world.surfaceAt(car.body.position.x, car.body.position.z) + 0.72;
+    const y = this.world.surfaceAt(car.body.position.x, car.body.position.z) + 0.02;
     car.body.position.y = y;
     car.body.velocity.y = 0;
     car.mesh.position.set(car.body.position.x, y, car.body.position.z);
@@ -154,34 +155,68 @@ export class VehicleManager {
   }
 }
 
+const RUBBER = new THREE.MeshStandardMaterial({ color: '#17191c', roughness: 0.78, metalness: 0.04 });
+const RIM = new THREE.MeshStandardMaterial({ color: '#c5c8cc', roughness: 0.35, metalness: 0.75 });
+const GLASS = new THREE.MeshStandardMaterial({
+  color: '#b7d0d8',
+  roughness: 0.08,
+  metalness: 0.15,
+  transparent: true,
+  opacity: 0.55,
+  envMapIntensity: 1,
+});
+const LAMP = new THREE.MeshStandardMaterial({ color: '#fff6d8', emissive: '#fff1c4', emissiveIntensity: 0.7 });
+const TAIL = new THREE.MeshStandardMaterial({ color: '#8a1d1d', emissive: '#ff2a2a', emissiveIntensity: 0.35 });
+const TRIM = new THREE.MeshStandardMaterial({ color: '#2a2e33', roughness: 0.45, metalness: 0.5 });
+
+function part(w, h, d, material, x, y, z, rx = 0) {
+  const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), material);
+  mesh.position.set(x, y, z);
+  mesh.rotation.x = rx;
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+  return mesh;
+}
+
 function buildCarMesh(color) {
   const root = new THREE.Group();
-  const paint = new THREE.MeshStandardMaterial({ color, roughness: 0.45, metalness: 0.25 });
-  const dark = new THREE.MeshStandardMaterial({ color: '#1b1e22', roughness: 0.5, metalness: 0.4 });
-  const glass = new THREE.MeshStandardMaterial({ color: '#9fd0dd', roughness: 0.15, metalness: 0.1, transparent: true, opacity: 0.75 });
-  const body = new THREE.Mesh(new THREE.BoxGeometry(1.75, 0.55, 4.2), paint);
-  body.position.y = 0.15;
-  const cabin = new THREE.Mesh(new THREE.BoxGeometry(1.55, 0.55, 2.0), paint);
-  cabin.position.set(0, 0.62, 0.15);
-  const wind = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.42, 0.08), glass);
-  wind.position.set(0, 0.66, -0.82);
-  wind.rotation.x = 0.35;
-  const lightMat = new THREE.MeshStandardMaterial({ color: '#fff6d8', emissive: '#fff1c4', emissiveIntensity: 0.6 });
-  const lampL = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.12, 0.08), lightMat);
-  lampL.position.set(-0.55, 0.18, -2.08);
-  const lampR = lampL.clone();
-  lampR.position.x = 0.55;
-  root.add(body, cabin, wind, lampL, lampR);
+  const paint = new THREE.MeshPhysicalMaterial({
+    color,
+    roughness: 0.32,
+    metalness: 0.62,
+    clearcoat: 0.7,
+    clearcoatRoughness: 0.18,
+    envMapIntensity: 1,
+  });
+  root.add(part(1.78, 0.42, 4.2, paint, 0, 0.58, 0.02));
+  root.add(part(1.68, 0.12, 1.35, paint, 0, 0.78, -1.05));
+  root.add(part(1.58, 0.42, 1.7, paint, 0, 0.92, 0.18));
+  root.add(part(1.72, 0.16, 0.28, TRIM, 0, 0.48, -2.02));
+  root.add(part(1.72, 0.16, 0.22, TRIM, 0, 0.48, 2.05));
+  root.add(part(1.42, 0.38, 0.06, GLASS, 0, 0.96, -0.64, 0.42));
+  root.add(part(1.42, 0.32, 0.05, GLASS, 0, 0.98, 1.0, -0.35));
+  root.add(part(0.05, 0.32, 1.15, GLASS, -0.8, 0.96, 0.18));
+  root.add(part(0.05, 0.32, 1.15, GLASS, 0.8, 0.96, 0.18));
+  const lampL = part(0.32, 0.12, 0.06, LAMP, -0.58, 0.62, -2.12);
+  const lampR = part(0.32, 0.12, 0.06, LAMP, 0.58, 0.62, -2.12);
+  root.add(lampL, lampR);
+  root.add(part(0.28, 0.1, 0.05, TAIL, -0.58, 0.66, 2.12));
+  root.add(part(0.28, 0.1, 0.05, TAIL, 0.58, 0.66, 2.12));
+  root.add(part(0.16, 0.1, 0.22, paint, -0.96, 0.95, 0.15));
+  root.add(part(0.16, 0.1, 0.22, paint, 0.96, 0.95, 0.15));
   const wheels = [];
   const front = [];
-  const spots = [[-0.82, -1.25], [0.82, -1.25], [-0.82, 1.25], [0.82, 1.25]];
+  const spots = [[-0.84, -1.32], [0.84, -1.32], [-0.84, 1.28], [0.84, 1.28]];
   for (const [x, z] of spots) {
     const pivot = new THREE.Group();
-    pivot.position.set(x, -0.05, z);
+    pivot.position.set(x, 0.34, z);
     const spin = new THREE.Group();
-    const tire = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.34, 0.22, 10), dark);
+    const tire = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.34, 0.24, 14), RUBBER);
     tire.rotation.z = Math.PI / 2;
-    spin.add(tire);
+    tire.castShadow = true;
+    const rim = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.18, 0.26, 10), RIM);
+    rim.rotation.z = Math.PI / 2;
+    spin.add(tire, rim);
     pivot.add(spin);
     root.add(pivot);
     wheels.push(spin);

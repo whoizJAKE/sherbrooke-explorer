@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
+import { eaveHeight } from './roadmath.mjs';
 
 const UP = new THREE.Vector3(0, 1, 0);
 // yaw 0 looks north, which is world -Z. right = cross(forward, up).
@@ -220,10 +221,13 @@ export class Player {
       const key = `${b.minX.toFixed(1)}|${b.minZ.toFixed(1)}|${b.floors}|${b.maxX.toFixed(1)}`;
       keep.add(key);
       if (this._colliders.has(key)) continue;
-      const H = b.height;
+      const grounds = [];
+      for (let k = 0; k < b.pts.length; k += 2) grounds.push(this.world.terrainY(b.pts[k], b.pts[k + 1]));
+      const { eave, min } = eaveHeight(grounds, b.height);
+      const H = Math.max(2.7, eave - min);
       const hx = Math.max(0.45, (b.maxX - b.minX) / 2);
       const hz = Math.max(0.45, (b.maxZ - b.minZ) / 2);
-      const halfY = H / 2 + 0.5;
+      const halfY = H / 2;
       const body = new CANNON.Body({
         mass: 0,
         material: this.buildingMat,
@@ -231,8 +235,7 @@ export class Player {
         collisionFilterMask: GROUP_PLAYER | GROUP_CAR,
       });
       body.addShape(new CANNON.Box(new CANNON.Vec3(hx, halfY, hz)));
-      const y0 = this.world.baseY(b.pts);
-      body.position.set((b.minX + b.maxX) / 2, y0 + H / 2 - 0.5, (b.minZ + b.maxZ) / 2);
+      body.position.set((b.minX + b.maxX) / 2, min + halfY, (b.minZ + b.maxZ) / 2);
       this.physics.addBody(body);
       this._colliders.set(key, body);
     }
@@ -248,12 +251,12 @@ export class Player {
     if (!this.selfTestMode) {
       this.orbitYaw -= input.lookX * 0.0022;
       this.pitch = Math.max(-0.7, Math.min(0.55, this.pitch - input.lookY * 0.0018));
-      if (input.mouseIdle > 0.7) this.orbitYaw = dampAngle(this.orbitYaw, car.yaw, dt * 2.1);
+      if (input.mouseIdle > 0.55) this.orbitYaw = dampAngle(this.orbitYaw, car.yaw, dt * 2.8);
     }
     const prevD = this.distance;
     const prevS = this.shoulder;
-    this.distance = this.firstPerson ? 0.15 : 8.4;
-    this.shoulder = this.firstPerson ? 0 : 0.55;
+    this.distance = this.firstPerson ? 0.15 : 7.2;
+    this.shoulder = this.firstPerson ? 0 : 0.48;
     this._target.set(car.mesh.position.x, car.mesh.position.y + (this.firstPerson ? 0.85 : 1.15), car.mesh.position.z);
     this.placeCamera(this._target);
     this.resolveCamera(this._target);
@@ -290,7 +293,16 @@ function buildPerson() {
   armL.position.set(-0.32, 1.16, 0);
   const armR = armL.clone();
   armR.position.x = 0.32;
-  group.add(chest, head, nose, legL, legR, armL, armR);
+  const hair = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.12, 0.28), pants);
+  hair.position.set(0, 1.84, 0);
+  const shoeL = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.08, 0.26), pants);
+  shoeL.position.set(-0.12, 0.04, -0.02);
+  const shoeR = shoeL.clone();
+  shoeR.position.x = 0.12;
+  group.add(chest, head, nose, legL, legR, armL, armR, hair, shoeL, shoeR);
+  group.traverse((obj) => {
+    if (obj.isMesh) obj.castShadow = true;
+  });
   return group;
 }
 

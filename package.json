@@ -8,6 +8,8 @@
     "dev": "vite",
     "preview": "vite preview",
     "data": "node scripts/build-world.mjs",
+    "textures": "node scripts/make-textures.mjs",
+    "check": "node scripts/check-roads.mjs",
     "build:web": "vite build",
     "dev:electron": "concurrently -k \"vite --port 5173 --strictPort\" \"wait-on http://localhost:5173 && electron .\"",
     "build:mac": "vite build && electron-builder --mac --config electron-builder.yml --publish never"

@@ -2,6 +2,7 @@
 // Header is 76 bytes, then a float32 DEM, then a chunk index, then chunk blobs.
 
 import { simplex2 } from './simplex.js';
+import { chooseDeck, mixBridgeHeight } from './roadmath.mjs';
 
 const HEADER = 76;
 const CELL = 10;
@@ -138,6 +139,7 @@ export function parseWorld(buffer, meta) {
     counts: meta.counts,
   };
   buildWaterMask(world);
+  buildRoadField(world);
   return world;
 }
 
@@ -305,6 +307,54 @@ function strokeRibbon(pts, width, mark) {
   }
 }
 
+function buildRoadField(world) {
+  const { dem } = world;
+  const cell = 4;
+  const cols = Math.ceil((dem.maxX - dem.minX) / cell) + 1;
+  const rows = Math.ceil((dem.maxZ - dem.minZ) / cell) + 1;
+  const field = new Uint8Array(cols * rows);
+  const mark = (x, z, value) => {
+    const c = Math.floor((x - dem.minX) / cell);
+    const r = Math.floor((z - dem.minZ) / cell);
+    if (c < 0 || r < 0 || c >= cols || r >= rows) return;
+    const i = r * cols + c;
+    if (field[i] < value) field[i] = value;
+  };
+  for (const chunk of world.chunks.values()) {
+    for (const road of chunk.roads) {
+      strokeRoad(road.pts, road.width * 0.5 + 1.2, (x, z) => mark(x, z, 2));
+      strokeRoad(road.pts, road.width * 0.5 + 14, (x, z) => mark(x, z, 1));
+    }
+  }
+  world.roadField = field;
+  world.roadCols = cols;
+  world.roadRows = rows;
+  world.roadCell = cell;
+}
+
+function strokeRoad(pts, rad, mark) {
+  const step = 4;
+  for (let i = 0; i + 3 < pts.length; i += 2) {
+    const ax = pts[i];
+    const az = pts[i + 1];
+    const bx = pts[i + 2];
+    const bz = pts[i + 3];
+    const len = Math.hypot(bx - ax, bz - az);
+    const steps = Math.max(1, Math.ceil(len / step));
+    const reach = Math.max(1, Math.ceil(rad / step));
+    for (let s = 0; s <= steps; s++) {
+      const t = s / steps;
+      const x = ax + (bx - ax) * t;
+      const z = az + (bz - az) * t;
+      for (let dz = -reach; dz <= reach; dz++) {
+        for (let dx = -reach; dx <= reach; dx++) {
+          if ((dx * dx + dz * dz) * step * step <= rad * rad) mark(x + dx * step, z + dz * step);
+        }
+      }
+    }
+  }
+}
+
 function assignBridgeDecks(world) {
   const segs = world.bridges;
   const parent = segs.map((_, i) => i);
@@ -376,40 +426,82 @@ function assignBridgeDecks(world) {
     list.push(seg);
   });
   for (const group of groups.values()) {
-    let maxLand = -Infinity;
-    let maxAny = -Infinity;
-    let land = false;
+    const ends = [];
+    for (const seg of group) {
+      const n = seg.pts.length;
+      ends.push({ x: seg.pts[0], z: seg.pts[1] });
+      ends.push({ x: seg.pts[n - 2], z: seg.pts[n - 1] });
+    }
+    const abutments = [];
+    for (const end of ends) {
+      let friends = 0;
+      for (const other of ends) {
+        if (other === end) continue;
+        if ((end.x - other.x) ** 2 + (end.z - other.z) ** 2 < 12 * 12) friends += 1;
+      }
+      if (friends === 0) abutments.push(end);
+    }
+    let bankTop = -Infinity;
+    let waterClear = -Infinity;
+    let abutmentTop = -Infinity;
+    let anyWet = false;
     for (const seg of group) {
       for (let i = 0; i < seg.pts.length; i += 2) {
-        const elev = world.sampleDem(seg.pts[i], seg.pts[i + 1]);
-        maxAny = Math.max(maxAny, elev);
-        if (world.maskAt(seg.pts[i], seg.pts[i + 1]) < 2) {
-          land = true;
-          maxLand = Math.max(maxLand, elev);
+        const x = seg.pts[i];
+        const z = seg.pts[i + 1];
+        const elev = world.sampleDem(x, z);
+        if (world.maskAt(x, z) === 2) {
+          anyWet = true;
+          waterClear = Math.max(waterClear, elev - 0.42 + 3.6);
+        } else {
+          bankTop = Math.max(bankTop, elev);
         }
       }
     }
-    const deck = land ? maxLand + 0.45 : maxAny + 6.2;
-    for (const seg of group) seg.deckY = deck;
+    for (const end of abutments) abutmentTop = Math.max(abutmentTop, world.sampleDem(end.x, end.z));
+    let span = 0;
+    for (let a = 0; a < abutments.length; a++) {
+      for (let b = a + 1; b < abutments.length; b++) {
+        span = Math.max(span, Math.hypot(abutments[a].x - abutments[b].x, abutments[a].z - abutments[b].z));
+      }
+    }
+    if (span === 0) {
+      for (const seg of group) {
+        const n = seg.pts.length;
+        span = Math.max(span, Math.hypot(seg.pts[0] - seg.pts[n - 2], seg.pts[1] - seg.pts[n - 1]));
+      }
+    }
+    const deck = chooseDeck({
+      bankTop,
+      waterClear,
+      overpass: !anyWet,
+      abutmentTop: Number.isFinite(abutmentTop) ? abutmentTop : bankTop,
+    });
+    const approach = Math.min(52, Math.max(14, span * 0.38 || 28));
+    for (const seg of group) {
+      seg.deckY = deck;
+      seg.abutments = abutments;
+      seg.approach = approach;
+    }
   }
 }
 
 export async function loadWorld(onProgress) {
   const base = import.meta.env.BASE_URL;
-  onProgress?.(0.08, 'Fetching Sherbrooke…');
+  onProgress?.(0.08, 'loading');
   const [metaRes, packRes] = await Promise.all([
     fetch(`${base}world-meta.json`),
     fetch(`${base}world.pack`),
   ]);
   if (!metaRes.ok || !packRes.ok) throw new Error('missing world data');
-  onProgress?.(0.4, 'Reading the map…');
+  onProgress?.(0.4, 'reading');
   const meta = await metaRes.json();
   const buffer = await packRes.arrayBuffer();
-  onProgress?.(0.7, 'Shaping terrain and rivers…');
+  onProgress?.(0.7, 'shaping');
   const world = parseWorld(buffer, meta);
   attachHeight(world);
   assignBridgeDecks(world);
-  onProgress?.(0.9, 'Placing the streets…');
+  onProgress?.(0.9, 'placing');
   return world;
 }
 
@@ -438,14 +530,42 @@ function attachHeight(world) {
     return world.mask[r * world.maskCols + c];
   };
   world.detail = (x, z) => simplex2(x * 0.011, z * 0.011) * 0.9 + simplex2(x * 0.045, z * 0.045) * 0.28;
+  world.roadValue = (x, z) => {
+    if (!world.roadField) return 0;
+    const c = Math.floor((x - world.dem.minX) / world.roadCell);
+    const r = Math.floor((z - world.dem.minZ) / world.roadCell);
+    if (c < 0 || r < 0 || c >= world.roadCols || r >= world.roadRows) return 0;
+    return world.roadField[r * world.roadCols + c];
+  };
+  world.roadEase = (x, z) => {
+    const v = world.roadValue(x, z);
+    if (v >= 1) return 0;
+    return 1;
+  };
+  world.onCarriage = (x, z) => world.roadValue(x, z) >= 2;
   world.terrainY = (x, z) => {
     const elev = world.sampleDem(x, z);
     const mask = world.maskAt(x, z);
+    const ease = world.roadEase(x, z);
     if (mask === 2) return elev - 2.55;
-    if (mask === 1) return elev - 0.7 + world.detail(x, z) * 0.25;
-    return elev + world.detail(x, z);
+    if (mask === 1) return elev - 0.55 + world.detail(x, z) * 0.15 * ease;
+    return elev + world.detail(x, z) * ease;
   };
   world.waterY = (x, z) => world.sampleDem(x, z) - 0.42;
+  world.bridgeY = (x, z, seg) => {
+    let dist = 1e9;
+    const abutments = seg.abutments || [];
+    for (const end of abutments) dist = Math.min(dist, Math.hypot(x - end.x, z - end.z));
+    if (!abutments.length) dist = seg.approach || 40;
+    return mixBridgeHeight({
+      ground: world.terrainY(x, z) + 0.14,
+      deck: seg.deckY,
+      distToAbutment: dist,
+      approach: seg.approach || 36,
+      waterY: world.waterY(x, z),
+      wet: world.maskAt(x, z) === 2,
+    });
+  };
   world.bridgeDeckAt = (x, z) => {
     let best = null;
     let bestD = 8;
@@ -453,10 +573,10 @@ function attachHeight(world) {
       if (seg.deckY == null) continue;
       for (let i = 0; i + 3 < seg.pts.length; i += 2) {
         const hit = distToSeg(x, z, seg.pts[i], seg.pts[i + 1], seg.pts[i + 2], seg.pts[i + 3]);
-        const limit = seg.width * 0.5 + 1.4;
+        const limit = seg.width * 0.5 + 1.6;
         if (hit.d < limit && hit.d < bestD) {
           bestD = hit.d;
-          best = seg.deckY;
+          best = world.bridgeY(hit.x, hit.z, seg);
         }
       }
     }
@@ -464,9 +584,11 @@ function attachHeight(world) {
   };
   world.surfaceAt = (x, z) => {
     const deck = world.bridgeDeckAt(x, z);
-    if (deck != null) return deck + 0.2;
+    if (deck != null) return deck;
     if (world.maskAt(x, z) === 2) return world.waterY(x, z);
-    return world.terrainY(x, z);
+    const y = world.terrainY(x, z);
+    if (world.onCarriage(x, z)) return y + 0.14;
+    return y;
   };
   world.chunkAt = (x, z) => world.chunks.get(`${Math.floor(x / world.chunkSize)},${Math.floor(z / world.chunkSize)}`) || null;
   world.buildingsNear = (x, z, radius) => {

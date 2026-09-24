@@ -1,3 +1,5 @@
+import { t } from './i18n.js';
+
 const FOUND_KEY = 'sherbrooke-explorer-found';
 
 export class Hud {
@@ -76,7 +78,7 @@ export class Hud {
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'landmark';
-      btn.innerHTML = `<b>${index + 1}. ${poi.name}</b><span>${poi.blurb}</span><i>${this.found.has(poi.id) ? 'found' : ''}</i>`;
+      btn.innerHTML = `<b>${index + 1}. ${poi.name}</b><span>${poi.blurb}</span><i>${this.found.has(poi.id) ? t('found') : ''}</i>`;
       btn.addEventListener('click', () => {
         this.onTeleport?.(poi);
         this.setMenu(false);
@@ -112,11 +114,16 @@ export class Hud {
   }
 
   refreshLandmarks() {
-    this.landEl.textContent = `Landmarks ${this.found.size}/${this.pois.length}`;
+    this.landEl.textContent = `${t('landmarks')} ${this.found.size}/${this.pois.length}`;
   }
 
-  update({ playerX, playerZ, heading, speed, driving, prompt, firstPerson, envLabel, debug, fps, drawCalls, triangles, chunks }) {
-    this.clockEl.textContent = envLabel;
+  refreshLanguage() {
+    this.refreshLandmarks();
+    this.buildMenu();
+  }
+
+  update({ playerX, playerZ, heading, speed, driving, prompt, firstPerson, envLabel, qualityLabel, debug, fps, drawCalls, triangles, chunks }) {
+    this.clockEl.textContent = qualityLabel ? `${envLabel} · ${qualityLabel}` : envLabel;
     this.promptEl.textContent = prompt || '';
     this.speedEl.hidden = !driving;
     if (driving) this.speedEl.textContent = `${Math.round(Math.abs(speed) * 3.6)} km/h`;
