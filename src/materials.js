@@ -48,24 +48,30 @@ export async function createMaterials() {
   const base = import.meta.env.BASE_URL;
   const color = (name, repeat = true) => loadTexture(`${base}textures/${name}`, repeat, true);
   const data = (name) => loadTexture(`${base}textures/${name}`, true, false);
-  const [grass, grassN, asphalt, asphaltN, asphaltR, concrete, concreteN, roofMap, roofN, brickMap, brickN, brickLights, stoneMap, stoneN, stoneLights, glassMap, glassN, glassLights, maple, autumn, pine] = await Promise.all([
+  const [grass, grassN, grassR, asphalt, asphaltN, asphaltR, concrete, concreteN, concreteR, roofMap, roofN, roofR, brickMap, brickN, brickAo, brickLights, stoneMap, stoneN, stoneAo, stoneLights, glassMap, glassN, glassAo, glassLights, maple, autumn, pine] = await Promise.all([
     color('grass.png'),
     data('grass-normal.png'),
+    data('grass-rough.png'),
     color('asphalt.png'),
     data('asphalt-normal.png'),
     data('asphalt-rough.png'),
     color('concrete.png'),
     data('concrete-normal.png'),
+    data('concrete-rough.png'),
     color('roof.png'),
     data('roof-normal.png'),
+    data('roof-rough.png'),
     color('brick.png'),
     data('brick-normal.png'),
+    data('brick-ao.png'),
     color('brick-lights.png'),
     color('stone.png'),
     data('stone-normal.png'),
+    data('stone-ao.png'),
     color('stone-lights.png'),
     color('glass.png'),
     data('glass-normal.png'),
+    data('glass-ao.png'),
     color('glass-lights.png'),
     color('tree-maple.png', false),
     color('tree-autumn.png', false),
@@ -75,21 +81,23 @@ export async function createMaterials() {
   const terrain = new THREE.MeshStandardMaterial({
     map: grass,
     normalMap: grassN,
-    normalScale: new THREE.Vector2(0.55, 0.55),
+    roughnessMap: grassR,
+    normalScale: new THREE.Vector2(1.1, 1.1),
     vertexColors: true,
-    roughness: 0.96,
+    roughness: 1,
     metalness: 0,
     side: THREE.DoubleSide,
   });
-  const brick = wallMaterial(brickMap, brickN, brickLights, 0.86, 0.02, 0.9);
-  const stone = wallMaterial(stoneMap, stoneN, stoneLights, 0.8, 0.04, 0.75);
-  const glass = wallMaterial(glassMap, glassN, glassLights, 0.16, 0.55, 0.4);
+  const brick = wallMaterial(brickMap, brickN, brickAo, brickLights, 0.92, 0.02, 1.15);
+  const stone = wallMaterial(stoneMap, stoneN, stoneAo, stoneLights, 0.86, 0.04, 1);
+  const glass = wallMaterial(glassMap, glassN, glassAo, glassLights, 0.22, 0.62, 0.55);
   glass.envMapIntensity = 1.05;
   const roof = new THREE.MeshStandardMaterial({
     map: roofMap,
     normalMap: roofN,
-    normalScale: new THREE.Vector2(0.7, 0.7),
-    roughness: 0.9,
+    roughnessMap: roofR,
+    normalScale: new THREE.Vector2(1, 1),
+    roughness: 1,
     metalness: 0.04,
     side: THREE.DoubleSide,
   });
@@ -97,7 +105,7 @@ export async function createMaterials() {
     map: asphalt,
     normalMap: asphaltN,
     roughnessMap: asphaltR,
-    normalScale: new THREE.Vector2(0.45, 0.45),
+    normalScale: new THREE.Vector2(0.8, 0.8),
     roughness: 0.92,
     metalness: 0.04,
     side: THREE.DoubleSide,
@@ -109,8 +117,9 @@ export async function createMaterials() {
   const sidewalk = new THREE.MeshStandardMaterial({
     map: concrete,
     normalMap: concreteN,
-    normalScale: new THREE.Vector2(0.4, 0.4),
-    roughness: 0.94,
+    roughnessMap: concreteR,
+    normalScale: new THREE.Vector2(0.7, 0.7),
+    roughness: 1,
     metalness: 0,
     side: THREE.DoubleSide,
     polygonOffset: true,
@@ -216,10 +225,12 @@ export async function createMaterials() {
   };
 }
 
-function wallMaterial(map, normalMap, emissiveMap, roughness, metalness, normalStrength) {
+function wallMaterial(map, normalMap, aoMap, emissiveMap, roughness, metalness, normalStrength) {
   return new THREE.MeshStandardMaterial({
     map,
     normalMap,
+    aoMap,
+    aoMapIntensity: 1.15,
     normalScale: new THREE.Vector2(normalStrength, normalStrength),
     emissiveMap,
     emissive: new THREE.Color('#ffe0b0'),

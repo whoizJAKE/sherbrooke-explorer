@@ -10,7 +10,10 @@ const UP = new THREE.Vector3(0, 1, 0);
 function geoFrom(pos, idx, uv, col, nrm) {
   const geo = new THREE.BufferGeometry();
   geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
-  if (uv) geo.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+  if (uv) {
+    geo.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+    geo.setAttribute('uv2', geo.attributes.uv);
+  }
   if (col) geo.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
   if (nrm) geo.setAttribute('normal', new THREE.Float32BufferAttribute(nrm, 3));
   else geo.computeVertexNormals();
@@ -159,9 +162,9 @@ function pushWall(bucket, ax, az, bx, bz, y0a, y0b, y1b, y1a, nx, nz, u0, u1, v0
 
 function facadeTint(building, key) {
   const h = Math.abs(Math.sin(building.minX * 0.021 + building.minZ * 0.017));
-  if (key === 'glass') return [0.94 + h * 0.06, 0.96 + h * 0.04, 0.98];
-  if (key === 'stone') return [0.9 + h * 0.1, 0.89 + h * 0.08, 0.84 + h * 0.08];
-  return [0.9 + h * 0.1, 0.86 + h * 0.09, 0.82 + h * 0.07];
+  if (key === 'glass') return [0.98 + h * 0.02, 0.99, 1];
+  if (key === 'stone') return [0.97 + h * 0.03, 0.97 + h * 0.02, 0.96];
+  return [0.98 + h * 0.02, 0.96 + h * 0.03, 0.94 + h * 0.02];
 }
 
 function extrude(building, world, walls, roof, doors) {
@@ -275,9 +278,9 @@ function paintTerrain(world, cx, cz, seg) {
       g = 0.56 + n * 0.06;
       b = 0.4;
     } else {
-      r = 0.74 + n * 0.16;
-      g = 0.8 + n * 0.14;
-      b = 0.64 + n * 0.08;
+      r = 0.94 + n * 0.06;
+      g = 0.96 + n * 0.04;
+      b = 0.9 + n * 0.05;
     }
     colors[i * 3] = r;
     colors[i * 3 + 1] = g;
@@ -285,6 +288,7 @@ function paintTerrain(world, cx, cz, seg) {
   }
   geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
   geo.computeVertexNormals();
+  geo.setAttribute('uv2', geo.attributes.uv);
   addSkirt(geo, seg, 7);
   return geo;
 }

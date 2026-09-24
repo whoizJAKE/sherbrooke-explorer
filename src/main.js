@@ -1,5 +1,10 @@
 import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
 import './style.css';
 import { loadWorld } from './load.js';
 import { createMaterials } from './materials.js';
@@ -101,13 +106,51 @@ async function main() {
   document.body.prepend(renderer.domElement);
 
   const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(68, window.innerWidth / window.innerHeight, 0.12, 5200);
+  const camera = new THREE.PerspectiveCamera(62, window.innerWidth / window.innerHeight, 0.15, 4200);
   const world = await loadWorld(setLoad);
   setLoad(0.94, 'raising');
   const materials = await createMaterials();
   const chunks = new ChunkStreamer(scene, world, materials);
   const env = new Environment(scene, renderer);
   env.applyQuality(quality);
+  try {
+    const hdr = await new RGBELoader().loadAsync(`${import.meta.env.BASE_URL}textures/sky.hdr`);
+    hdr.mapping = THREE.EquirectangularReflectionMapping;
+    const pmrem = new THREE.PMREMGenerator(renderer);
+    env.setHdr(pmrem.fromEquirectangular(hdr).texture);
+    hdr.dispose();
+    pmrem.dispose();
+  } catch (err) {
+    console.warn(err);
+    env.refreshEnvironment();
+  }
+  let composer = null;
+  const renderView = () => {
+    if (quality !== 'high') {
+      renderer.render(scene, camera);
+      return;
+    }
+    if (!composer) {
+      composer = new EffectComposer(renderer);
+      composer.addPass(new RenderPass(scene, camera));
+      const gtao = new GTAOPass(scene, camera);
+      gtao.blendIntensity = 0.58;
+      gtao.updateGtaoMaterial({
+        radius: 16,
+        distanceExponent: 1.4,
+        thickness: 1,
+        scale: 1.2,
+        samples: 8,
+        distanceFallOff: 1,
+        screenSpaceRadius: true,
+      });
+      composer.addPass(gtao);
+      composer.addPass(new OutputPass());
+    }
+    composer.setPixelRatio(renderer.getPixelRatio());
+    composer.setSize(window.innerWidth, window.innerHeight);
+    composer.render();
+  };
   const physics = new CANNON.World({ gravity: new CANNON.Vec3(0, -18, 0) });
   physics.broadphase = new CANNON.SAPBroadphase(physics);
   physics.allowSleep = true;
@@ -238,7 +281,7 @@ async function main() {
       chunks: `${stream.loaded}/${stream.wanted}`,
     });
     audio.update({ driving: Boolean(driven), speed: driven ? driven.speed : 0, rain: env.rainOn });
-    if (!player.selfTestMode) renderer.render(scene, camera);
+    if (!player.selfTestMode) renderView();
     input.endFrame();
     input.pendingJump = false;
   };

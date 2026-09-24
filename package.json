@@ -1,6 +1,6 @@
 {
   "name": "sherbrooke-explorer",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "description": "Explore a 3D open-world reconstruction of Sherbrooke, Québec",
   "main": "electron/main.js",

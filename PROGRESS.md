@@ -59,6 +59,12 @@ These files are gitignored build output, still in `release/` here:
 | Sherbrooke Explorer-1.0.0.dmg (Intel) | 110.4 MB |
 | Sherbrooke Explorer-1.0.0-mac.zip (Intel) | 105.4 MB |
 
+### Photoreal pass, 2026-09-23
+
+Blender 4.5.7 baked the wall, ground, and tree maps from modelled windows, procedural brick and asphalt, and leaf cards. A Nishita sky lights reflections. The high preset adds screen-space contact shading. The result is a lit material city on the real streets, not a photograph of Sherbrooke: the buildings are still the OpenStreetMap extrusions, and the person is still a simple figure.
+
+The Apple silicon app is `release/Sherbrooke Explorer-1.1.0-arm64.dmg`.
+
 ### Visual upgrade, 2026-09-23
 
 Daytime downtown Rue King and the Pont Jacques-Cartier approach were the comparison views. The same spawn camera was used before and after.

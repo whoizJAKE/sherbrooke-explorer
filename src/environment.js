@@ -103,8 +103,15 @@ export class Environment {
     this._envSky = new THREE.Mesh(new THREE.SphereGeometry(40, 24, 14), this.sky);
     this._envScene.add(this._envSky);
     this.envMap = null;
-    this._envStamp = '';
-    this.refreshEnvironment();
+    this._envStamp = 'hdr';
+    this._useHdr = false;
+  }
+
+  setHdr(texture) {
+    if (this.envMap) this.envMap.dispose();
+    this.envMap = texture;
+    this.scene.environment = texture;
+    this._useHdr = true;
   }
 
   get dayFactor() {
@@ -146,6 +153,7 @@ export class Environment {
   }
 
   refreshEnvironment() {
+    if (this._useHdr) return;
     const next = this._pmrem.fromScene(this._envScene, 0.04);
     if (this.envMap) this.envMap.dispose();
     this.envMap = next.texture;
@@ -164,13 +172,14 @@ export class Environment {
     this.sun.target.position.copy(aim);
     this.sun.target.updateMatrixWorld();
     const day = this.dayFactor;
-    this.sun.intensity = 0.05 + day * 2.05;
+    const ibl = this._useHdr;
+    this.sun.intensity = 0.04 + day * (ibl ? 1.25 : 2.05);
     this.sun.color.set(this._sun.y > 0.45 ? '#fff5e4' : '#ffd8b0');
-    this.hemi.intensity = 0.16 + day * 0.5;
+    this.hemi.intensity = ibl ? 0.05 + day * 0.1 : 0.16 + day * 0.5;
     this.hemi.color.set(day > 0.35 ? '#c9d7e6' : '#6d7f99');
     this.hemi.groundColor.set(day > 0.35 ? '#6a7350' : '#2a3328');
-    this.ambient.intensity = 0.1 + day * 0.12 + (1 - day) * 0.16;
-    this.renderer.toneMappingExposure = 0.72 + day * 0.28;
+    this.ambient.intensity = ibl ? 0.03 + (1 - day) * 0.08 : 0.1 + day * 0.12 + (1 - day) * 0.16;
+    this.renderer.toneMappingExposure = ibl ? 0.55 + day * 0.16 : 0.72 + day * 0.28;
     this._horizon.copy(this._dayHorizon).lerp(this._nightHorizon, 1 - day);
     this._zenith.copy(this._dayZenith).lerp(this._nightZenith, 1 - day);
     if (this.rainOn && day > 0.3) this._horizon.lerp(new THREE.Color('#c5ced4'), 0.45);
@@ -191,7 +200,8 @@ export class Environment {
     if (materials.water.uniforms.uSun) materials.water.uniforms.uSun.value.copy(this._sun);
     materials.water.uniforms.uTime.value += dt;
     const stamp = day > 0.42 ? 'day' : 'night';
-    if (stamp !== this._envStamp) this.refreshEnvironment();
+    if (!this._useHdr && stamp !== this._envStamp) this.refreshEnvironment();
+    this.scene.environmentIntensity = this._useHdr ? 0.18 + day * 0.28 : 1;
 
     const pos = this.rain.geometry.attributes.position;
     this.rain.material.opacity = this.rainOn ? 0.45 : 0;
