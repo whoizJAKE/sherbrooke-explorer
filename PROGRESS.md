@@ -218,7 +218,7 @@ Release artifacts (not in git):
 ### Phase 0 — Housekeeping and CI
 
 - Added `.editorconfig`, ESLint (`npm run lint`), and `scripts/smoke.mjs` (`npm run test:smoke`). The smoke test loads the built site in system Chrome and checks that the world pack decodes and the player stands within 40 m of the Rue King landmark.
-- `.github/workflows/deploy.yml` is committed. Pushing it needs a token with `workflow` scope: `gh auth refresh -h github.com -s workflow`. Until that works, the live site stays on the `gh-pages` branch.
+- `.github/workflows/deploy.yml` is written (`npm ci`, `npm run build:web`, `actions/deploy-pages`). On 2026-10-08 GitHub rejected the push: `refusing to allow an OAuth App to create or update workflow without workflow scope`. The file stays in this working copy and is not on `origin/main`. The owner can publish it with `gh auth refresh -h github.com -s workflow`, then commit and push that file, then set Pages to GitHub Actions. Until then the live site stays on the `gh-pages` branch.
 - Removed the duplicated unchecked Phase 3–5 and Phase 8 lists that repeated the completed checklists above.
 
 ## Notes

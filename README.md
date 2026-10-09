@@ -64,7 +64,7 @@ npm run dev:electron
 
 F11 toggles fullscreen. There is no browser menu bar.
 
-The public site is the `gh-pages` branch. `npm run build:web` writes a new `dist/`. An Actions workflow that publishes `dist/` on every push to `main` is `.github/workflows/deploy.yml` (`npm ci`, `npm run build:web`, `actions/deploy-pages`). Publishing that file needs a GitHub token with the `workflow` scope:
+The public site is the `gh-pages` branch. `npm run build:web` writes a new `dist/`. The Actions workflow that would publish `dist/` is saved locally at `.github/workflows/deploy.yml` (`npm ci`, `npm run build:web`, `actions/deploy-pages`). GitHub refused to store that file because the token has no `workflow` scope. A fresh clone does not include it until the owner runs:
 
 ```bash
 gh auth refresh -h github.com -s workflow
