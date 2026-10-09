@@ -10,6 +10,8 @@
     "data": "node scripts/build-world.mjs",
     "textures": "node scripts/make-textures.mjs",
     "check": "node scripts/check-roads.mjs",
+    "lint": "eslint src scripts electron",
+    "test:smoke": "npm run build:web && node scripts/smoke.mjs",
     "build:web": "vite build",
     "dev:electron": "concurrently -k \"vite --port 5173 --strictPort\" \"wait-on http://localhost:5173 && electron .\"",
     "build:mac": "vite build && electron-builder --mac --config electron-builder.yml --publish never"
@@ -23,7 +25,9 @@
     "concurrently": "^9.1.2",
     "electron": "^33.2.1",
     "electron-builder": "^25.1.8",
+    "eslint": "^10.12.0",
     "pngjs": "^7.0.0",
+    "puppeteer-core": "^25.13.0",
     "vite": "^6.0.6",
     "wait-on": "^8.0.1"
   }

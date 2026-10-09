@@ -179,30 +179,6 @@ Floor heights default to 2–8 when OSM has no `building:levels` or `height`. Do
 - [x] Weather toggle: clear / light rain (R) — particles plus wetter roads
 - [x] Commit and push
 
-## Phase 3 — Player, vehicles, controls
-
-- [ ] Third-person over-the-shoulder camera, first-person toggle
-- [ ] Capsule collider and physics
-- [ ] On foot: WASD, Shift sprint, Space jump, C crouch, mouse orbit
-- [ ] At least one drivable car, arcade handling, F to enter/exit near spawns
-- [ ] Minimap and compass
-- [ ] M landmark quick-menu for Phase 1 POIs
-- [ ] Commit and push
-
-## Phase 4 — Performance and streaming
-
-- [ ] Chunked tiles about 250m, radius rendering, frustum culling, LOD past about 500m
-- [ ] 60fps target, F3 overlay (fps, draw calls)
-- [ ] Instanced meshes for repeated elements
-- [ ] Commit and push
-
-## Phase 5 — Polish
-
-- [ ] Ambient city audio referenced by filename (placeholders noted)
-- [ ] Landmark discovery layer and on-screen counter
-- [ ] Weather toggle: clear / light rain
-- [ ] Commit and push
-
 ## Phase 6 — Native macOS packaging
 
 - [x] electron, electron-builder, concurrently, wait-on — devDependencies, game code untouched by the shell
@@ -237,11 +213,13 @@ Release artifacts (not in git):
 - [x] Counts, performance, URLs, commands, limitations, next steps
 - [x] Pushed
 
-## Phase 8 — Final report
+## Realism pass, started 2026-10-08
 
-- [ ] Summary at the top of this file and in the README
-- [ ] Counts, performance, URLs, commands, limitations, next steps
-- [ ] Pushed
+### Phase 0 — Housekeeping and CI
+
+- Added `.editorconfig`, ESLint (`npm run lint`), and `scripts/smoke.mjs` (`npm run test:smoke`). The smoke test loads the built site in system Chrome and checks that the world pack decodes and the player stands within 40 m of the Rue King landmark.
+- `.github/workflows/deploy.yml` is committed. Pushing it needs a token with `workflow` scope: `gh auth refresh -h github.com -s workflow`. Until that works, the live site stays on the `gh-pages` branch.
+- Removed the duplicated unchecked Phase 3–5 and Phase 8 lists that repeated the completed checklists above.
 
 ## Notes
 

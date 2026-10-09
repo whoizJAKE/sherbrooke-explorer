@@ -1335,7 +1335,6 @@ async function main() {
   await mkdir(path.join(ROOT, 'data'), { recursive: true });
 
   const roadSel = 'way["highway"~"^(motorway|motorway_link|trunk|trunk_link|primary|primary_link|secondary|secondary_link|tertiary|tertiary_link|residential|unclassified|living_street|pedestrian|service)$"]';
-  const [buildingEls, roadEls, waterWayEls, waterRelEls, parkEls] = [];
   const layers = [
     ['buildings', ['way["building"]']],
     ['building-rels', ['relation["building"]']],

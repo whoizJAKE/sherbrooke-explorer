@@ -64,7 +64,15 @@ npm run dev:electron
 
 F11 toggles fullscreen. There is no browser menu bar.
 
-The public site is the `gh-pages` branch. `npm run build:web` writes a new `dist/`. An Actions workflow that would publish `dist/` on every push to `main` is saved at `.github/workflows/deploy.yml`. Publishing that file needs a GitHub token with the `workflow` scope (`gh auth refresh -h github.com -s workflow`). Until then, update the site by replacing the files on `gh-pages`.
+The public site is the `gh-pages` branch. `npm run build:web` writes a new `dist/`. An Actions workflow that publishes `dist/` on every push to `main` is `.github/workflows/deploy.yml` (`npm ci`, `npm run build:web`, `actions/deploy-pages`). Publishing that file needs a GitHub token with the `workflow` scope:
+
+```bash
+gh auth refresh -h github.com -s workflow
+```
+
+Until that scope is on the token, update the site by replacing the files on `gh-pages`.
+
+`npm run lint` runs ESLint. `npm run test:smoke` builds the site and opens it in Chrome to check that the world pack loads and the player starts on Rue King.
 
 Map data © OpenStreetMap contributors, available under the Open Database License. The same credit is shown in the game. Elevation is the terrarium tiles already packed in `public/world.pack`.
 
